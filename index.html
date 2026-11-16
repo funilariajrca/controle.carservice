@@ -1543,7 +1543,7 @@ html[data-input="mouse"] :focus-visible{outline:2px solid var(--accent);outline-
 .ifs:last-of-type{border-bottom:0}
 .ifs>h4{margin:0 0 8px;font:700 15px/1 var(--cond);letter-spacing:.04em;text-transform:uppercase;color:var(--mute);display:flex;gap:8px;align-items:center}
 .ifs>h4 i{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px}
-.ifg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.ifg>*{min-width:0}#inflBody{overflow-x:hidden}.insprev{display:flex;gap:8px;align-items:center;margin:8px 0 0;padding:8px 10px;border:1px solid var(--line);border-radius:10px}.insprev small{display:block;color:var(--mute);font-size:12px;word-break:break-all}.insdash{display:flex;flex-direction:column;gap:16px;margin-top:6px}.insdash .dx-a{grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr))}
+.ifg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.ifg>*{min-width:0}#inflBody{overflow-x:hidden}.insprev{display:flex;gap:8px;align-items:center;margin:8px 0 0;padding:8px 10px;border:1px solid var(--line);border-radius:10px}.insprev small{display:block;color:var(--mute);font-size:12px;word-break:break-all}.est-pqw{margin:6px 0 8px}.est-pq{width:100%;max-width:420px;box-sizing:border-box;height:36px;padding:0 10px;border:1px solid var(--line2);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}.insdash{display:flex;flex-direction:column;gap:16px;margin-top:6px}.insdash .dx-a{grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr))}
 @media(max-width:560px){.ifg{grid-template-columns:1fr}}
 .inscars{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
 .inscar{display:flex;gap:8px;align-items:center;text-align:left;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font:inherit}
@@ -8547,8 +8547,9 @@ function estoqueHtml(){
     var c=r.c,pend=estPend(c),pi=partsInfo(c),shown=keepMap[c.id]||c.pecas||[];
     var tags=r.tags.map(function(t){return t==='aguard'?'<span class="flag warn">Aguardando peças</span>':t==='em'?'<span class="flag plain">Etapa: '+esc(c.status)+'</span>':'<span class="flag plain">Chega '+pgFmtD(D.nx)+'</span>'}).join('')+
       (pi.total?'<span class="flag '+(pi.rec===pi.total?'ok':pi.late?'bad':'plain')+'">Peças '+pi.rec+'/'+pi.total+'</span>':'<span class="flag plain">Sem pedido de peça</span>');
-    var falta='';
-    var chk=pi.total?'<div class="est-chk"><div class="est-chkh">'+pi.rec+' de '+pi.total+' peça'+(pi.total===1?'':'s')+' chegaram · '+Math.round(pi.rec/pi.total*100)+'%'+(Q&&shown.length<(c.pecas||[]).length?' · busca: '+shown.length+' de '+(c.pecas||[]).length+' peças':'')+'</div>'+shown.map(function(p){
+    var falta='',pq=(ui.estPQ&&ui.estPQ[c.id])||'',pqn=acNorm(pq).trim(),shownP=pqn?shown.filter(function(p){return acMatch(acNorm((p.nome||'')+' '+(p.codigo||'')),pqn)}):shown;
+    var pqIn=pi.total>1?'<div class="est-pqw"><input type="search" class="est-pq" data-pq="'+esc(c.id)+'" value="'+esc(pq)+'" placeholder="Buscar peça deste veículo (nome ou código)" autocomplete="off" aria-label="Buscar peça deste veículo"></div>'+(pqn&&!shownP.length?'<p class="muted" style="margin:6px 0">Nenhuma peça deste veículo corresponde a "'+esc(pq)+'".</p>':''):'';
+    var chk=pi.total?'<div class="est-chk"><div class="est-chkh">'+pi.rec+' de '+pi.total+' peça'+(pi.total===1?'':'s')+' chegaram · '+Math.round(pi.rec/pi.total*100)+'%'+(Q&&shown.length<(c.pecas||[]).length?' · busca: '+shown.length+' de '+(c.pecas||[]).length+' peças':'')+(pqn?' · mostrando '+shownP.length+' de '+shown.length:'')+'</div>'+pqIn+shownP.map(function(p){
       var rest=pRest(p),sa=p.saidas||[];
       return '<div class="est-pk2"><label class="est-pk'+(p.recebida?' on':'')+'"><input type="checkbox" data-estchk="'+esc(c.id)+'|'+esc(p.id)+'"'+(p.recebida?' checked':'')+'><span>'+esc(p.nome)+(p.qtd>1?' ×'+p.qtd:'')+(p.codigo?'<small class="est-cod">Cód. '+esc(p.codigo)+'</small>':'')+'</span></label>'+
         '<div class="est-sa"><span class="flag '+(rest?'plain':'ok')+'">'+(rest?'No estoque: '+rest+' de '+p.qtd+' un.':'Tudo retirado')+'</span>'+(rest?'<button type="button" class="btn small" data-estsai="'+esc(c.id)+'|'+esc(p.id)+'">Dar saída</button>':'')+(cEd?'<button type="button" class="btn small" data-ppe="'+esc(c.id)+'|'+esc(p.id)+'">Editar</button>':'')+'</div>'+
@@ -8561,6 +8562,13 @@ function estoqueHtml(){
     '<div class="est-wrap">'+mapa+'</div><p class="muted" style="margin:-6px 0 12px">Clique em um local para ver os veículos dele. Locais de A1 a A10 até E1 a E10.</p>'+locPanel+busca+
     '<div class="est-f">'+filt+'</div>'+(lista||(Q?'<div class="insight"><p>Nenhum resultado para <b>'+esc(ui.estQ)+'</b>'+((F!=='todos'||L)?'. Há um filtro ativo (aba ou local); tente Todos ou limpe o local.':'.')+'</p></div>':'<div class="insight"><p>Nenhum veículo nesta seleção.</p></div>'))+sem;
 }
+(function(){var tp=null;
+  document.addEventListener('input',function(e){
+    var t=e.target;if(!t||!t.getAttribute||t.getAttribute('data-pq')===null)return;
+    var id=t.getAttribute('data-pq'),pos=t.selectionStart;ui.estPQ=ui.estPQ||{};ui.estPQ[id]=t.value;clearTimeout(tp);
+    tp=setTimeout(function(){render();var n=document.querySelector('[data-pq="'+id.replace(/"/g,'')+'"]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(x){}}},140);
+  });
+})();
 (function(){var tm=null;
   document.addEventListener('input',function(e){
     var t=e.target;if(!t||t.id!=='estQ')return;
