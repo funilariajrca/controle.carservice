@@ -1,6 +1,6 @@
 /* Controle Car Service - Funilaria · service worker
    Ao publicar uma nova versão do app, troque o número de VERSION abaixo. */
-var VERSION = 'v7';
+var VERSION = 'v10';
 var SHELL = 'cs-shell-' + VERSION;
 var RUNTIME = 'cs-runtime-' + VERSION;
 var SHELL_FILES = [
